@@ -16,6 +16,12 @@ functions:
     package:
       individually: true
 
+  fnWithPath:
+    handler: dir1/subdir4/index.handler
+    package:
+      individually: true
+      path: 'dir1/subdir4'
+
   fnGo:
     handler: bin/main
     runtime: go1.x

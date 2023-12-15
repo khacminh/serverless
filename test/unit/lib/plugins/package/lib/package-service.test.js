@@ -37,6 +37,7 @@ describe('test/unit/lib/plugins/package/lib/packageService.test.js', () => {
     let serviceZippedFiles;
     let fnIndividualZippedFiles;
     let fnFileProperties;
+    let fnWithPathZippedFiles;
     let fnLayerFiles;
 
     before(async () => {
@@ -63,6 +64,21 @@ describe('test/unit/lib/plugins/package/lib/packageService.test.js', () => {
             fnIndividual: {
               package: { patterns: ['dir1/subdir4/**', '!dir3/**'] },
             },
+            fnWithPath: {
+              package: {
+                path: 'dir1/subdir4',
+                patterns: [
+                  '!dir1/**',
+                  '!dir1/subdir1/**',
+                  '!dir1/subdir2/**',
+                  '!dir1/subdir3/**',
+                  '!dir2/**',
+                  '!dir3/**',
+                  '!custom-plugins',
+                  'dir1/subdir4/**',
+                ],
+              },
+            },
           },
         },
       });
@@ -74,6 +90,10 @@ describe('test/unit/lib/plugins/package/lib/packageService.test.js', () => {
 
       fnIndividualZippedFiles = await listZipFiles(
         path.join(serviceDir, '.serverless', 'fnIndividual.zip')
+      );
+
+      fnWithPathZippedFiles = await listZipFiles(
+        path.join(serviceDir, '.serverless', 'fnWithPath.zip')
       );
 
       fnLayerFiles = await listZipFiles(path.join(serviceDir, '.serverless', 'layer.zip'));
@@ -114,6 +134,9 @@ describe('test/unit/lib/plugins/package/lib/packageService.test.js', () => {
       expect(serverless.service.getFunction('fnIndividual').package.artifact).to.include(
         'fnIndividual.zip'
       );
+      expect(serverless.service.getFunction('fnWithPath').package.artifact).to.include(
+        'fnWithPath.zip'
+      );
     });
 
     it('should support `functions[].package.exclude`', () => {
@@ -122,6 +145,11 @@ describe('test/unit/lib/plugins/package/lib/packageService.test.js', () => {
 
     it('should support `functions[].package.include`', () => {
       expect(fnIndividualZippedFiles).to.include('dir1/subdir4/index.js');
+    });
+
+    it('should change the handler dir if `path` is defined', () => {
+      expect(fnWithPathZippedFiles).to.include('index.js');
+      expect(fnWithPathZippedFiles).to.not.include('dir1/subdir4/index.js');
     });
 
     (process.platform === 'win32' ? it : it.skip)(
